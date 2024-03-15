@@ -7,7 +7,7 @@ from typing import Optional
 import sqlalchemy as sa
 import sqlalchemy.orm as so
 from werkzeug.security import generate_password_hash, check_password_hash
-from mainapp import db
+from mainapp import db, login
 
 class User(db.Model):
     '''
@@ -38,6 +38,16 @@ class User(db.Model):
            verifying the user's password
         '''
         return check_password_hash(self.password_hash, password)
+
+    @login.user_loader
+    def load_user(id):
+        ''' grabbing the unique id for the user in the session,
+            return the logged in user
+        '''
+        return db.session.get(User, int(id))
+
+
+
 class Post(db.Model):
     '''
        Post model for post table in the database.

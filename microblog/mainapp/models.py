@@ -6,6 +6,7 @@ from datetime import datetime, timezone
 from typing import Optional
 import sqlalchemy as sa
 import sqlalchemy.orm as so
+from werkzeug.security import generate_password_hash, check_password_hash
 from mainapp import db
 
 class User(db.Model):
@@ -26,6 +27,17 @@ class User(db.Model):
         '''
         return '<User {}>'.format(self.username)
 
+    def set_password(self, password):
+        """
+           setting a password for a user
+        """
+        self.password_hash = generate_password_hash(password)
+
+    def check_password(self, password):
+        '''
+           verifying the user's password
+        '''
+        return check_password_hash(self.password_hash, password)
 class Post(db.Model):
     '''
        Post model for post table in the database.

@@ -6,10 +6,11 @@ from datetime import datetime, timezone
 from typing import Optional
 import sqlalchemy as sa
 import sqlalchemy.orm as so
+from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 from mainapp import db, login
 
-class User(db.Model):
+class User(db.Model, UserMixin):
     '''
       User model for user table in the database
     '''
@@ -39,12 +40,12 @@ class User(db.Model):
         '''
         return check_password_hash(self.password_hash, password)
 
-    @login.user_loader
-    def load_user(id):
-        ''' grabbing the unique id for the user in the session,
-            return the logged in user
-        '''
-        return db.session.get(User, int(id))
+@login.user_loader
+def load_user(id):
+    ''' grabbing the unique id for the user in the session,
+    return the logged in user
+    '''
+    return db.session.get(User, int(id))
 
 
 

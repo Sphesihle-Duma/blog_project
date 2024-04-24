@@ -36,7 +36,7 @@ class User(db.Model, UserMixin):
     following: so.WriteOnlyMapped['User'] = so.relationship(
             secondary=followers, primaryjoin=(followers.c.follower_id == id),
             secondaryjoin=(followers.c.followed_id == id),
-            back_populates='folloers')
+            back_populates='followers')
     followers: so.WriteOnlyMapped['User'] = so.relationship(
             secondary=followers, primaryjoin=(followers.c.followed_id == id),
             secondaryjoin=(followers.c.follower_id == id),
@@ -101,6 +101,25 @@ class User(db.Model, UserMixin):
         query = sa.select(sa.func.count()).select_from(
                 self.following.select().subquery())
         return db.session.scalar(query)
+
+    def following_posts(self):
+        '''
+           Returning users and followers posts
+        '''
+        Author = so.aliased(User)
+        Follower = so.aliased(User)
+        return(
+                sa.select(Post)
+                .join(Post.author.of_type(Author))
+                .join(Author.followers.of_type(Follower), isouter=True)
+                .where(sa.or_(
+                    Follower.id == self.id,
+                    Author.id self.id
+                    ))
+                .group_by(Post)
+                .order_by(Post.timestamp.desc())
+                )
+
 
 @login.user_loader
 def load_user(id):

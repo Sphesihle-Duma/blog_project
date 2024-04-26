@@ -71,3 +71,11 @@ class EmptyForm(FlaskForm):
        Following and unfollowing the user
     '''
     submit = SubmitField('Submit')
+
+class PostForm(FlaskForm):
+    '''
+       submitting the post
+    '''
+    post = TextAreaField('Say something', validators=[
+        DataRequired(), Length(min=1, max=140)])
+    submit = SubmitField('Submit')

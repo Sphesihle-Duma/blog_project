@@ -35,8 +35,18 @@ def index():
         flash(f'Your post is now live!')
         return redirect(url_for('index'))
     
-    posts = db.session.scalars(current_user.following_posts()).all()
-    return render_template('index.html', title='Home', posts=posts, form=form)
+    page = request.args.get('page', 1, type=int)
+    posts = db.paginate(current_user.following_posts(), page=page, per_page=app.config['POSTS_PER_PAGE'], error_out=False)
+
+    if posts.has_next:
+        next_url = url_for('index', page=posts.next_num)
+    else:
+        next_url = None
+    if posts.has_prev:
+        prev_url = url_for('index', page=posts.prev_num)
+    else:
+        prev_url = None
+    return render_template('index.html', title='Home', posts=posts.items, form=form, next_url=next_url, prev_url=prev_url)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -166,6 +176,16 @@ def explore():
     '''
        Displaying all users and their posts
     '''
+    page = request.args.get('page', 1, type=int)
     query = sa.select(Post).order_by(Post.timestamp.desc())
-    posts = db.session.scalars(query).all()
-    return render_template('index.html', title='Explore', posts=posts)
+    posts = db.paginate(query, page=page, per_page=app.config['POSTS_PER_PAGE'], error_out=False)
+    
+    if posts.has_next:
+        next_url = url_for('explore', page=posts.next_num)
+    else:
+        next_url = None
+    if posts.has_prev:
+        prev_url = url_for('explore', page=post.next_prev)
+    else:
+        None
+    return render_template('index.html', title='Explore', posts=posts, next_url=next_url, prev_url=prev_url)
